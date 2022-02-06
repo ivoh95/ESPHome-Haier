@@ -92,8 +92,8 @@ using namespace esphome::climate;
 //from here down is status only, our control message ended at 21 
 #define TEMPERATURE_OFFSET   		22 //multiply by 2, 0.5c steps
 //23 only seen as 0
-//24, seems to be a measurement of some kind, hangs out around 60-70, gets lower after running for a while, temperature?
-#define COMPRESSSOR_BYTE					27//seeems to be 1 in off, 3 in heat? changeover valve?
+#define OUTDOOR_TEMP				24// outdoor temp with an offset of 32 and half degree steps?
+#define COMPRESSSOR_BYTE			27//seeems to be 1 in off, 3 in heat? changeover valve?
 
 //message types seen and used
 #define SEND_TYPE_POLL				115//next message is poll, enables command and poll messages to be replied to

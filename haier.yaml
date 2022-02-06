@@ -148,11 +148,21 @@ number:
     optimistic: true
 sensor:
   - platform: template
+    id: outdoor_temp
+    name: "Outdoor Temperature"
+    update_interval: 5s
+    unit_of_measurement: "°C"
+    device_class: "temperature"
+    state_class: "measurement"
+    lambda: |-
+            return ((id(control_command)[OUTDOOR_TEMP]) / 2) -32; //offset of 32
+  - platform: template
     id: Tester_byte_value
     name: "Tester Byte Value"
     update_interval: 1s
     lambda: |-
             return (id(control_command)[(int)id(Tester_byte).state]);
+
   
 climate:
   - platform: custom
