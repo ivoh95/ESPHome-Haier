@@ -538,7 +538,7 @@ public:
         }
 				
 		if (call.get_target_temperature().has_value()) {
-			SetControlByte(SET_POINT_OFFSET, NO_MSK,((*call.get_target_temperature()*2) -16)); //set the tempature at our offset, subtract 16.
+			SetControlByte(SET_POINT_OFFSET, NO_MSK,((*call.get_target_temperature()) -16)); //set the tempature at our offset, subtract 16.
 		}
 		
 		if (call.get_preset().has_value()) {
