@@ -47,30 +47,22 @@ using namespace esphome::climate;
 #define STATUS_DATA1_OFFSET 		16 
 	#define AWAY_BIT				(0)//away mode for 10c
 	#define DISPLAY_BIT				(1)//if the display is on or off
-	#define DEAD_BIT				(2)
-	#define DEAD_BIT				(3)
-	#define DEAD_BIT				(4)
+	#define HALF_DEGREE_BIT			(2)
+	#define INTELLIGENCE_BIT		(3)
+	#define PMV_BIT					(4)
 	#define F_BIT					(5)//switches the display to f instead of c
-	#define DEAD_BIT				(6)
+	#define ENERGY_SAVE_BIT			(6)
 	#define SELF_CLEAN56_BIT		(7)//starts a cleaning cycle clean 56
 #define STATUS_DATA2_OFFSET			17 // Purify/Quiet mode/OnOff/...
 	#define POWER_BIT				(0)	
-	#define PURIFY_DATA2_BIT		(1)
-	#define UNKNOWN_BIT      		(2) //remote turns it off
+	#define HEALTH_BIT				(1)
+	#define ELECTRIC_HEAT_BIT    	(2) 
 	#define FAST_BIT				(3)
 	#define QUIET_BIT				(4)	
 	#define SLEEP_BIT				(5)
 	#define LOCK_BIT				(6) //disables remote
-	#define DEAD_BIT				(7) 
-#define UNKOWN_BYTE					18 
-	#define UNKNOWN_BIT				(0) 
-	#define UNKNOWN_BIT				(1)
-	#define UNKNOWN_BIT				(2)
-	#define UNKNOWN_BIT				(3)
-	#define UNKNOWN_BIT				(4)
-	#define UNKNOWN_BIT				(5)
-	#define DEAD_BIT				(6)
-	#define DEAD_BIT				(7)
+	#define ECHO_BIT				(7) 
+//18 unsure. 
 #define HORIZONTAL_SWING_OFFSET		19
 	#define HORIZONTAL_SWING_MSK			0x0F
 	#define HORIZONTAL_SWING_CENTER 		0x00
@@ -81,19 +73,20 @@ using namespace esphome::climate;
 	#define HORIZONTAL_SWING_AUTO 			0x07
 //20 not tested, not sure
 #define STATUS_DATA3_OFFSET 		21 //cleaning and purify related this is the last byte we control in the control command since they are of size 20
-	#define PURIFY_DATA3_BIT0		(0) //turns on purify light/ different purify mode???? turning on the other health mode turns this one off
-	#define DEAD_BIT				(1)
-	#define PURIFY_DATA3_BIT1		(2) //turns on with purify? comes on with the bit from data 2
-	#define PURIFY_DATA3_BIT2		(3)//turns on with purify? comes on with the bit from data 2
+	#define FRESH_AIR_BIT			(0) //turning on the other health mode turns this one off
+	#define HUMIDIFICATION_BIT		(1) //???
+	#define PM2P5_BIT				(2) //turns on with health
+	#define CH20_BIT				(3) //turns on with health
 	#define SELF_CLEAN_BIT			(4) //self clean, not 56. 
-	#define DEAD_BIT				(5) 
-	#define DEAD_BIT				(6)
-	#define DEAD_BIT				(7) 
+	#define LIGHT_STATUS_BIT		(5) //???
+	#define ENERGY_SAVE_BIT			(6) //???
+	#define FILTER_BIT				(7) //???
 //from here down is status only, our control message ended at 21 
 #define TEMPERATURE_OFFSET   		22 //multiply by 2, 0.5c steps
 //23 only seen as 0
-#define OUTDOOR_TEMP				24// outdoor temp with an offset of 32 and half degree steps?
-#define COMPRESSSOR_BYTE			27//seeems to be 1 in off, 3 in heat? changeover valve?
+#define OUTDOOR_TEMP				24// outdoor temp with an offset of 20 and half degree steps?
+#define COMMAND_SOURCE_BYTE			27// command source
+
 
 //message types seen and used
 #define SEND_TYPE_POLL				115//next message is poll, enables command and poll messages to be replied to
@@ -158,6 +151,9 @@ byte getChecksum(const byte * message) {
     }
 
 void sendData(byte * message) {
+        if (!(id(echo_status).state))
+            bitSet(id(control_command)[STATUS_DATA2_OFFSET], ECHO_BIT); //quiet
+
 		byte size = message[MESSAGE_LENGTH_OFFSET]; 
 		size += 5; 
         byte crc_offset = size-3;
@@ -542,7 +538,7 @@ public:
         }
 				
 		if (call.get_target_temperature().has_value()) {
-			SetControlByte(SET_POINT_OFFSET, NO_MSK,(*call.get_target_temperature() -16)); //set the tempature at our offset, subtract 16.
+			SetControlByte(SET_POINT_OFFSET, NO_MSK,((*call.get_target_temperature()*2) -16)); //set the tempature at our offset, subtract 16.
 		}
 		
 		if (call.get_preset().has_value()) {
@@ -579,6 +575,7 @@ public:
                     break;
 			}
 		}
+
 		sendData(id(control_command));  //send the data after all our changes, no need to send after each change
    }
 };

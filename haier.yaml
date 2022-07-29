@@ -17,7 +17,7 @@ logger:
 wifi:
   ssid: !secret wifi_ssid
   password: !secret wifi_password
-  use_address: haier.local
+  use_address: 192.168.1.10
     
 api:
 # Enable Home Assistant API
@@ -59,14 +59,14 @@ switch:
     id: purify_status
     icon: mdi:shimmer
     lambda: |-
-        return bitRead(id(control_command)[STATUS_DATA2_OFFSET], PURIFY_DATA2_BIT);
+        return bitRead(id(control_command)[STATUS_DATA2_OFFSET], HEALTH_BIT);
     turn_on_action:
       - lambda: |-
-          bitSet(id(control_command)[STATUS_DATA2_OFFSET], PURIFY_DATA2_BIT);
+          bitSet(id(control_command)[STATUS_DATA2_OFFSET], HEALTH_BIT);
           sendData(id(control_command));
     turn_off_action:
       - lambda: |-
-          bitClear(id(control_command)[STATUS_DATA2_OFFSET], PURIFY_DATA2_BIT);
+          bitClear(id(control_command)[STATUS_DATA2_OFFSET], HEALTH_BIT);
           sendData(id(control_command));
   - platform: template
     name: "Self Clean"
@@ -110,42 +110,125 @@ switch:
       - lambda: |-
           bitClear(id(control_command)[STATUS_DATA2_OFFSET], LOCK_BIT);
           sendData(id(control_command));
-          
-          
-          
   - platform: template
-    name: "Tester"
-    id: tester_status
-    icon: mdi:wrench
+    name: "Supplamental Heat"
+    id: supp_heat
+    icon: mdi:heating-coil
     lambda: |-
-        return bitRead(id(control_command)[(int)id(Tester_byte).state], (int)id(Tester_bit).state);
+        return bitRead(id(control_command)[STATUS_DATA2_OFFSET], ELECTRIC_HEAT_BIT);
     turn_on_action:
       - lambda: |-
-          if(id(Tester_byte).state < 25){//dont try to control status only bytes
-            bitSet(id(control_command)[(int)id(Tester_byte).state], (int)id(Tester_bit).state);
-            sendData(id(control_command));
-          }
+          bitSet(id(control_command)[STATUS_DATA2_OFFSET], ELECTRIC_HEAT_BIT);
+          sendData(id(control_command));
     turn_off_action:
       - lambda: |-
-          if(id(Tester_byte).state < 25){//dont try to control status only bytes
-            bitClear(id(control_command)[(int)id(Tester_byte).state], (int)id(Tester_bit).state);
-            sendData(id(control_command));
-          }
-number:
+          bitClear(id(control_command)[STATUS_DATA2_OFFSET], ELECTRIC_HEAT_BIT);
+          sendData(id(control_command));
   - platform: template
-    id: Tester_byte
-    name: "Tester_byte"
-    max_value: 46
-    min_value: 12
-    step: 1
+    name: "Beeper"
+    id: echo_status
+    icon: mdi:volume-high
+    restore_state: true
     optimistic: true
   - platform: template
-    id: Tester_bit
-    name: "Tester_bit"
-    max_value: 7
-    min_value: 0
-    step: 1
-    optimistic: true
+    name: "Fresh Air"
+    id: fresh_mode
+    icon: mdi:weather-windy
+    lambda: |-
+        return bitRead(id(control_command)[STATUS_DATA3_OFFSET], FRESH_AIR_BIT);
+    turn_on_action:
+      - lambda: |-
+          bitSet(id(control_command)[STATUS_DATA3_OFFSET], FRESH_AIR_BIT);
+          sendData(id(control_command));
+    turn_off_action:
+      - lambda: |-
+          bitClear(id(control_command)[STATUS_DATA3_OFFSET], FRESH_AIR_BIT);
+          sendData(id(control_command));
+  - platform: template
+    name: "Light Status"
+    lambda: |-
+        return bitRead(id(control_command)[STATUS_DATA3_OFFSET], LIGHT_STATUS_BIT);
+    turn_on_action:
+      - lambda: |-
+          bitSet(id(control_command)[STATUS_DATA3_OFFSET], LIGHT_STATUS_BIT);
+          sendData(id(control_command));
+    turn_off_action:
+      - lambda: |-
+          bitClear(id(control_command)[STATUS_DATA3_OFFSET], LIGHT_STATUS_BIT);
+          sendData(id(control_command));
+  - platform: template
+    name: "Energy Save Status"
+    lambda: |-
+        return bitRead(id(control_command)[STATUS_DATA3_OFFSET], ENERGY_SAVE_BIT);
+    turn_on_action:
+      - lambda: |-
+          bitSet(id(control_command)[STATUS_DATA3_OFFSET], ENERGY_SAVE_BIT);
+          sendData(id(control_command));
+    turn_off_action:
+      - lambda: |-
+          bitClear(id(control_command)[STATUS_DATA3_OFFSET], ENERGY_SAVE_BIT);
+          sendData(id(control_command));
+  - platform: template
+    name: "Filter"
+    lambda: |-
+        return bitRead(id(control_command)[STATUS_DATA3_OFFSET], FILTER_BIT);
+    turn_on_action:
+      - lambda: |-
+          bitSet(id(control_command)[STATUS_DATA3_OFFSET], FILTER_BIT);
+          sendData(id(control_command));
+    turn_off_action:
+      - lambda: |-
+          bitClear(id(control_command)[STATUS_DATA3_OFFSET], FILTER_BIT);
+          sendData(id(control_command));
+  - platform: template
+    name: "Intelligence"
+    lambda: |-
+        return bitRead(id(control_command)[STATUS_DATA1_OFFSET], INTELLIGENCE_BIT);
+    turn_on_action:
+      - lambda: |-
+          bitSet(id(control_command)[STATUS_DATA1_OFFSET], INTELLIGENCE_BIT);
+          sendData(id(control_command));
+    turn_off_action:
+      - lambda: |-
+          bitClear(id(control_command)[STATUS_DATA1_OFFSET], INTELLIGENCE_BIT);
+          sendData(id(control_command));
+  - platform: template
+    name: "Pulse Motor Valve"
+    lambda: |-
+        return bitRead(id(control_command)[STATUS_DATA1_OFFSET], PMV_BIT);
+    turn_on_action:
+      - lambda: |-
+          bitSet(id(control_command)[STATUS_DATA1_OFFSET], PMV_BIT);
+          sendData(id(control_command));
+    turn_off_action:
+      - lambda: |-
+          bitClear(id(control_command)[STATUS_DATA1_OFFSET], PMV_BIT);
+          sendData(id(control_command));
+  - platform: template
+    name: "Energy Save"
+    lambda: |-
+        return bitRead(id(control_command)[STATUS_DATA1_OFFSET], ENERGY_SAVE_BIT);
+    turn_on_action:
+      - lambda: |-
+          bitSet(id(control_command)[STATUS_DATA1_OFFSET], ENERGY_SAVE_BIT);
+          sendData(id(control_command));
+    turn_off_action:
+      - lambda: |-
+          bitClear(id(control_command)[STATUS_DATA1_OFFSET], ENERGY_SAVE_BIT);
+          sendData(id(control_command));
+  - platform: template
+    name: "Half Degree"
+    lambda: |-
+        return bitRead(id(control_command)[STATUS_DATA1_OFFSET], HALF_DEGREE_BIT);
+    turn_on_action:
+      - lambda: |-
+          bitSet(id(control_command)[STATUS_DATA1_OFFSET], HALF_DEGREE_BIT);
+          sendData(id(control_command));
+    turn_off_action:
+      - lambda: |-
+          bitClear(id(control_command)[STATUS_DATA1_OFFSET], HALF_DEGREE_BIT);
+          sendData(id(control_command));
+
 sensor:
   - platform: template
     id: outdoor_temp
@@ -155,15 +238,8 @@ sensor:
     device_class: "temperature"
     state_class: "measurement"
     lambda: |-
-            return ((id(control_command)[OUTDOOR_TEMP]) / 2) -32; //offset of 32
-  - platform: template
-    id: Tester_byte_value
-    name: "Tester Byte Value"
-    update_interval: 1s
-    lambda: |-
-            return (id(control_command)[(int)id(Tester_byte).state]);
+            return ((id(control_command)[OUTDOOR_TEMP])/2.0)-20; //offset of 25
 
-  
 climate:
   - platform: custom
     lambda: |-
